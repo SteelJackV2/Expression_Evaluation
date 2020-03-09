@@ -25,7 +25,7 @@ public class Expression {
         expr = expr.replaceAll(" ","");
         String expression = expr;
         StringTokenizer stringTokenizer = new StringTokenizer(expr, delims);
-        int index = 0;
+        int index;
 
         while (stringTokenizer.hasMoreTokens()){
             String token = stringTokenizer.nextToken();
@@ -50,10 +50,6 @@ public class Expression {
 
             expression = expression.substring(index+size);
         }
-    }
-
-    private static void removeSpaces(String expr){
-
     }
     
     /**
@@ -102,7 +98,7 @@ public class Expression {
      * @return Result of evaluation
      */
     public static float evaluate(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
-        String expression = expr.replaceAll(" ","");;
+        String expression = expr.replaceAll(" ","");
         while(expression.contains("]")){
             expression = shrinkArrays(expression,vars,arrays);
         }
@@ -126,7 +122,8 @@ public class Expression {
             else if(token.equals(")")){
                 String segment = expression.substring(0,expression.indexOf(")"));
                 float ans = solve(segment, vars);
-                String e = exp.substring(0, exp.indexOf(")") - segment.length() - 1) + ans + exp.substring(exp.indexOf(")") + 1);
+                String e = exp.substring(0, exp.indexOf(")") - segment.length() - 1);
+                e +=  + ans + exp.substring(exp.indexOf(")") + 1);
                 return e;
             }
         }
@@ -136,7 +133,7 @@ public class Expression {
     private static String shrinkArrays(String exp, ArrayList<Variable> vars, ArrayList<Array> arrays) {
         String expression = exp;
         StringTokenizer stringTokenizer = new StringTokenizer(expression, "[]",true);
-        int index = 0;
+        int index ;
         while (stringTokenizer.hasMoreTokens()) {
             String token = stringTokenizer.nextToken();
             index = expression.indexOf(token);
@@ -145,9 +142,13 @@ public class Expression {
             }
             else if(token.equals("]")){
                 String segment = expression.substring(0,expression.indexOf("]"));
+                while(segment.contains(")")){
+                    segment = shrinkParentheses(segment,vars);
+                }
                 float ans = solve(segment, vars);
                 String begining = exp.substring(0 , exp.indexOf("]")-segment.length()-1);
-                String e = replaceArray(begining, (int) ans,arrays) + exp.substring(exp.indexOf("]")+1);
+                String e = replaceArray(begining, (int) ans,arrays);
+                e += exp.substring(exp.indexOf("]")+1);
                 return e;
             }
         }
@@ -165,7 +166,7 @@ public class Expression {
             if(arrays.contains(new Array(token))){
                 size = token.length();
                 array = token;
-                text.append(expression.substring(0, index + size));
+                text.append(expression, 0, index + size);
                 expression = expression.substring(index+size);
             }
         }
@@ -177,7 +178,7 @@ public class Expression {
     private static float solve (String operation, ArrayList<Variable> vars){
         String expression = operation;
         StringTokenizer stringTokenizer = new StringTokenizer(operation, delims);
-        int index = 0;
+        int index;
         while (stringTokenizer.hasMoreTokens()) {
             String token = stringTokenizer.nextToken();
             index = expression.indexOf(token);
@@ -187,9 +188,9 @@ public class Expression {
             }
         }
 
-        ArrayList<Float> numbers = new ArrayList<Float>();
-        ArrayList<String> operators = new ArrayList<String>();
-        ArrayList<Integer> removableOperators = new ArrayList<Integer>();
+        ArrayList<Float> numbers = new ArrayList<>();
+        ArrayList<String> operators = new ArrayList<>();
+        ArrayList<Integer> removableOperators = new ArrayList<>();
 
         StringTokenizer tokenizer = new StringTokenizer(expression, "+"+"-"+"*"+"/" ,true);
         while(tokenizer.hasMoreTokens()){
