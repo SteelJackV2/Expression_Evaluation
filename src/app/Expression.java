@@ -98,10 +98,13 @@ public class Expression {
      */
     public static float evaluate(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
         String expression = expr;
-        while(expression.contains(")")){
+        expression = replaceArray(expression,0,arrays);
+        System.out.println(expression);
+        /*while(expression.contains(")")){
             expression = shrinkParentheses(expression,vars);
         }
-        return solve(expression,vars);
+        return solve(expression,vars);*/
+        return 0;
     }
 
     private static String shrinkParentheses(String exp, ArrayList<Variable> vars) {
@@ -118,7 +121,6 @@ public class Expression {
                 String segment = expression.substring(0,expression.indexOf(")"));
                 float ans = solve(segment, vars);
                 String e = exp.substring(0 , exp.indexOf(")")-segment.length()-1) + ans + exp.substring(exp.indexOf(")")+1);
-                System.out.println(e);
                 return e;
             }
         }
@@ -138,12 +140,31 @@ public class Expression {
             else if(token.equals("]")){
                 String segment = expression.substring(0,expression.indexOf("]"));
                 float ans = solve(segment, vars);
-                String e = exp.substring(0 , exp.indexOf("]")-segment.length()-1) + ans + exp.substring(exp.indexOf(")")+1);
+
+                String e = exp.substring(0 , exp.indexOf("]")-segment.length()) + ans + exp.substring(exp.indexOf("]"));
                 System.out.println(e);
                 return e;
             }
         }
         return "";
+    }
+
+    private static String replaceArray(String operation,int value, ArrayList<Array> arrays){
+        String expression = operation;
+        StringTokenizer stringTokenizer = new StringTokenizer(operation, delims);
+        int index = 0;
+        String array = "";
+        while (stringTokenizer.hasMoreTokens()) {
+            String token = stringTokenizer.nextToken();
+            index = expression.indexOf(token);
+            int size = token.length();
+            if(arrays.contains(new Array(token))){
+                array = token;
+                expression = expression.substring(index+size);
+            }
+        }
+        int a  = arrays.get(arrays.indexOf(new Array(array))).values[value];
+        return Integer.toString(a);
     }
 
     private static float solve (String operation, ArrayList<Variable> vars){
