@@ -22,6 +22,7 @@ public class Expression {
      * @param arrays The arrays array list - already created by the caller
      */
     public static void makeVariableLists(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
+        expr = expr.replaceAll(" ","");
         String expression = expr;
         StringTokenizer stringTokenizer = new StringTokenizer(expr, delims);
         int index = 0;
@@ -49,6 +50,10 @@ public class Expression {
 
             expression = expression.substring(index+size);
         }
+    }
+
+    private static void removeSpaces(String expr){
+
     }
     
     /**
@@ -97,20 +102,21 @@ public class Expression {
      * @return Result of evaluation
      */
     public static float evaluate(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
-        String expression = expr;
-        expression = replaceArray(expression,0,arrays);
-        System.out.println(expression);
-        /*while(expression.contains(")")){
+        String expression = expr.replaceAll(" ","");;
+        while(expression.contains("]")){
+            expression = shrinkArrays(expression,vars,arrays);
+        }
+
+        while(expression.contains(")")){
             expression = shrinkParentheses(expression,vars);
         }
-        return solve(expression,vars);*/
-        return 0;
+        return solve(expression,vars);
     }
 
     private static String shrinkParentheses(String exp, ArrayList<Variable> vars) {
         String expression = exp;
         StringTokenizer stringTokenizer = new StringTokenizer(expression, "()",true);
-        int index = 0;
+        int index;
         while (stringTokenizer.hasMoreTokens()) {
             String token = stringTokenizer.nextToken();
             index = expression.indexOf(token);
@@ -120,7 +126,7 @@ public class Expression {
             else if(token.equals(")")){
                 String segment = expression.substring(0,expression.indexOf(")"));
                 float ans = solve(segment, vars);
-                String e = exp.substring(0 , exp.indexOf(")")-segment.length()-1) + ans + exp.substring(exp.indexOf(")")+1);
+                String e = exp.substring(0, exp.indexOf(")") - segment.length() - 1) + ans + exp.substring(exp.indexOf(")") + 1);
                 return e;
             }
         }
@@ -140,31 +146,32 @@ public class Expression {
             else if(token.equals("]")){
                 String segment = expression.substring(0,expression.indexOf("]"));
                 float ans = solve(segment, vars);
-
-                String e = exp.substring(0 , exp.indexOf("]")-segment.length()) + ans + exp.substring(exp.indexOf("]"));
-                System.out.println(e);
+                String begining = exp.substring(0 , exp.indexOf("]")-segment.length()-1);
+                String e = replaceArray(begining, (int) ans,arrays) + exp.substring(exp.indexOf("]")+1);
                 return e;
             }
         }
         return "";
     }
 
-    private static String replaceArray(String operation,int value, ArrayList<Array> arrays){
-        String expression = operation;
-        StringTokenizer stringTokenizer = new StringTokenizer(operation, delims);
-        int index = 0;
+    private static String replaceArray(String expression,int value, ArrayList<Array> arrays){
+        StringTokenizer stringTokenizer = new StringTokenizer(expression, delims);
+        int index,size =0;
         String array = "";
+        StringBuilder text= new StringBuilder();
         while (stringTokenizer.hasMoreTokens()) {
             String token = stringTokenizer.nextToken();
             index = expression.indexOf(token);
-            int size = token.length();
             if(arrays.contains(new Array(token))){
+                size = token.length();
                 array = token;
+                text.append(expression.substring(0, index + size));
                 expression = expression.substring(index+size);
             }
         }
+        text = new StringBuilder(text.substring(0, text.length() - size));
         int a  = arrays.get(arrays.indexOf(new Array(array))).values[value];
-        return Integer.toString(a);
+        return text.toString() +a;
     }
 
     private static float solve (String operation, ArrayList<Variable> vars){
@@ -182,18 +189,16 @@ public class Expression {
 
         ArrayList<Float> numbers = new ArrayList<Float>();
         ArrayList<String> operators = new ArrayList<String>();
-        ArrayList<String> tokens = new ArrayList<String>();
         ArrayList<Integer> removableOperators = new ArrayList<Integer>();
 
         StringTokenizer tokenizer = new StringTokenizer(expression, "+"+"-"+"*"+"/" ,true);
         while(tokenizer.hasMoreTokens()){
-            String current = tokenizer.nextToken();
-            tokens.add(current);
-            if(current.equals("+")|| current.equals("-") || current.equals("*")|| current.equals("/")) {
-                operators.add(current);
+            String token = tokenizer.nextToken();
+            if(token.equals("+")|| token.equals("-") || token.equals("*")|| token.equals("/")) {
+                operators.add(token);
             }
             else {
-                numbers.add(Float.parseFloat(current));
+                numbers.add(Float.parseFloat(token));
             }
         }
 

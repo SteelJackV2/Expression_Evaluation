@@ -23,7 +23,7 @@ public class Evaluator {
 			Expression.makeVariableLists(expr, vars, arrays);
 
 			System.out.println("Enter variable values file name, or hit return if no variables => ");
-			String fname = "etest2.txt";
+			String fname = "etest1.txt";
 			if (fname.length() != 0) {
 				Scanner scfile = new Scanner(new File(fname));
 				Expression.loadVariableValues(scfile, vars, arrays);
