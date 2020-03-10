@@ -2,9 +2,8 @@ package app;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.*;
 
-import structures.Stack;
+//import structures.Stack;
 
 public class Expression {
 
@@ -146,8 +145,8 @@ public class Expression {
                     segment = shrinkParentheses(segment,vars);
                 }
                 float ans = solve(segment, vars);
-                String begining = exp.substring(0 , exp.indexOf("]")-segment.length()-1);
-                String e = replaceArray(begining, (int) ans,arrays);
+                String beginning = exp.substring(0 , exp.indexOf("]")-segment.length()-1);
+                String e = replaceArray(beginning, (int) ans,arrays);
                 e += exp.substring(exp.indexOf("]")+1);
                 return e;
             }
@@ -158,25 +157,31 @@ public class Expression {
     private static String replaceArray(String expression,int value, ArrayList<Array> arrays){
         StringTokenizer stringTokenizer = new StringTokenizer(expression, delims);
         int index,size =0;
-        String array = "";
+        Array array = new Array("");
         StringBuilder text= new StringBuilder();
         while (stringTokenizer.hasMoreTokens()) {
             String token = stringTokenizer.nextToken();
             index = expression.indexOf(token);
             if(arrays.contains(new Array(token))){
                 size = token.length();
-                array = token;
+                array = new Array(token);
                 text.append(expression, 0, index + size);
                 expression = expression.substring(index+size);
             }
         }
         text = new StringBuilder(text.substring(0, text.length() - size));
-        int a  = arrays.get(arrays.indexOf(new Array(array))).values[value];
+        int a = 0;
+        if(arrays.size()!=0) {
+            if (arrays.size() > arrays.indexOf(array)) {
+                if(arrays.get(arrays.indexOf(array)).values.length>value)
+                a = arrays.get(arrays.indexOf(array)).values[value];
+            }
+        }
         return text.toString() +a;
     }
 
     private static float solve (String operation, ArrayList<Variable> vars){
-        String expression = operation;
+        String expression = operation.replaceAll(" ","");
         StringTokenizer stringTokenizer = new StringTokenizer(operation, delims);
         int index;
         while (stringTokenizer.hasMoreTokens()) {
@@ -193,16 +198,22 @@ public class Expression {
         ArrayList<Integer> removableOperators = new ArrayList<>();
 
         StringTokenizer tokenizer = new StringTokenizer(expression, "+"+"-"+"*"+"/" ,true);
+        boolean minus = true;
         while(tokenizer.hasMoreTokens()){
             String token = tokenizer.nextToken();
-            if(token.equals("+")|| token.equals("-") || token.equals("*")|| token.equals("/")) {
+            if(minus && token.equals("-")){
+                token = tokenizer.nextToken();
+                numbers.add(Float.parseFloat("-"+token));
+                minus = false;
+            }else if(token.equals("+")|| token.equals("-") || token.equals("*")|| token.equals("/")) {
                 operators.add(token);
+                minus = true;
             }
             else {
                 numbers.add(Float.parseFloat(token));
+                minus = false;
             }
         }
-
         for(int x = 0; x<operators.size(); x++){
             if(operators.get(x).equals("*")) {
                 float temp = numbers.get(x);
@@ -221,18 +232,16 @@ public class Expression {
             operators.remove(temp);
             numbers.remove(temp);
         }
-
         for(int x = 0; x<operators.size(); x++){
             if(operators.get(x).equals( "+")) {
                 float temp = numbers.get(x);
                 numbers.set(x+1,temp + numbers.get(x + 1));
             }
             else if(operators.get(x).equals("-")) {
-                float temp = numbers.get(x);
-                numbers.set(x+1,temp - numbers.get(x + 1));
+                float temp = numbers.get(x) - numbers.get(x+1);
+                numbers.set(x+1,temp);
             }
         }
-
         return numbers.get(numbers.size()-1);
     }
 }
